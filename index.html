@@ -506,7 +506,6 @@
             .dice-container {
                 width: 280px;
                 height: 280px;
-                margin: 0 auto;
             }
 
             #physicsDice {
@@ -573,7 +572,7 @@
     <div class="container">
         <header>
             <h1>🎲 Dual Bet Dice 🎲</h1>
-            <p class="subtitle">Place 2 Bets - Win 6x on Correct Prediction!</p>
+            <p class="subtitle">Place 2 Bets - Win 4x on Correct Prediction!</p>
         </header>
         
         <div class="dice-area">
@@ -660,7 +659,7 @@
                     <div class="bet-summary" id="summary-1">
                         <div>Bet: <strong>Ksh <span id="bet-1-amount">0</span></strong></div>
                         <div>Number: <strong><span id="bet-1-number">-</span></strong></div>
-                        <div>Win: <strong>Ksh <span id="bet-1-win">0</span></strong> (6x)</div>
+                        <div>Win: <strong>Ksh <span id="bet-1-win">0</span></strong> (4x)</div>
                     </div>
                 </div>
                 
@@ -687,7 +686,7 @@
                     <div class="bet-summary" id="summary-2">
                         <div>Bet: <strong>Ksh <span id="bet-2-amount">0</span></strong></div>
                         <div>Number: <strong><span id="bet-2-number">-</span></strong></div>
-                        <div>Win: <strong>Ksh <span id="bet-2-win">0</span></strong> (6x)</div>
+                        <div>Win: <strong>Ksh <span id="bet-2-win">0</span></strong> (4x)</div>
                     </div>
                 </div>
             </div>
@@ -712,8 +711,8 @@
             <h3>📋 How to Play</h3>
             <p>✅ Place TWO bets with different amounts and numbers</p>
             <p>🎲 Throw the dice - one bet wins, one loses</p>
-            <p>💰 Winning bet pays 6x your stake!</p>
-            <p>🎯 Example: Bet Ksh 50 on "3" and Ksh 30 on "5". If dice shows 3, you win Ksh 300!</p>
+            <p>💰 Winning bet pays 4x your stake!</p>
+            <p>🎯 Example: Bet Ksh 50 on "3" and Ksh 30 on "5". If dice shows 3, you win Ksh 200!</p>
         </div>
         
         <div class="history">
@@ -1139,7 +1138,7 @@
             
             document.getElementById(`bet-${betNum}-amount`).textContent = bet.amount;
             document.getElementById(`bet-${betNum}-number`).textContent = bet.number || '-';
-            document.getElementById(`bet-${betNum}-win`).textContent = bet.amount * 6;
+            document.getElementById(`bet-${betNum}-win`).textContent = bet.amount * 4;
         }
 
         function areBothBetsComplete() {
@@ -1156,10 +1155,10 @@
             
             let potentialWin = 0;
             if (gameState.bet1.amount > 0 && gameState.bet1.number !== null) {
-                potentialWin = Math.max(potentialWin, gameState.bet1.amount * 6);
+                potentialWin = Math.max(potentialWin, gameState.bet1.amount * 4);
             }
             if (gameState.bet2.amount > 0 && gameState.bet2.number !== null) {
-                potentialWin = Math.max(potentialWin, gameState.bet2.amount * 6);
+                potentialWin = Math.max(potentialWin, gameState.bet2.amount * 4);
             }
             potentialWinValue.textContent = `Ksh ${potentialWin}`;
             
@@ -1177,10 +1176,10 @@
             let winningBet = null;
             
             if (bet1Won) {
-                winAmount = gameState.bet1.amount * 6;
+                winAmount = gameState.bet1.amount * 4;
                 winningBet = 1;
             } else if (bet2Won) {
-                winAmount = gameState.bet2.amount * 6;
+                winAmount = gameState.bet2.amount * 4;
                 winningBet = 2;
             }
             
@@ -1196,7 +1195,7 @@
                 popup.className = 'result-popup win-popup show';
                 popupTitle.textContent = '🎉 YOU WIN! 🎉';
                 popupMessage.textContent = `Dice: ${result} | Bet #${winningBet} Won!`;
-                popupAmount.textContent = `You won Ksh ${winAmount} (6x payout)!`;
+                popupAmount.textContent = `You won Ksh ${winAmount} (4x payout)!`;
                 
                 playWinSound();
                 createConfetti();
