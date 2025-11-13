@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfect Physics Dice</title>
+    <title>Dual Bet Physics Dice - 6x Payout</title>
     <style>
         * {
             margin: 0;
@@ -40,6 +40,12 @@
             font-size: 2.8rem;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #ffd700;
+            font-weight: bold;
         }
 
         .dice-area {
@@ -86,34 +92,31 @@
             border: 1px solid #333;
         }
 
-        /* FIXED: Correct face positioning to match rotation logic
-           When we rotate to show face X, it should have X dots */
         .face-1 { 
             background: #FF5252;
-            transform: translateZ(40px);  /* Front - shows when no rotation */
+            transform: translateZ(40px);
         }
         .face-2 { 
             background: #4CAF50;
-            transform: rotateY(180deg) translateZ(40px);  /* Back - shows at 180° Y */
+            transform: rotateY(180deg) translateZ(40px);
         }
         .face-3 { 
             background: #2196F3;
-            transform: rotateY(90deg) translateZ(40px);  /* Right - shows at 90° Y */
+            transform: rotateY(90deg) translateZ(40px);
         }
         .face-4 { 
             background: #FFC107;
-            transform: rotateY(-90deg) translateZ(40px);  /* Left - shows at -90° Y */
+            transform: rotateY(-90deg) translateZ(40px);
         }
         .face-5 { 
             background: #9C27B0;
-            transform: rotateX(-90deg) translateZ(40px);  /* Top - shows at -90° X (FIXED) */
+            transform: rotateX(-90deg) translateZ(40px);
         }
         .face-6 { 
             background: #FF9800;
-            transform: rotateX(90deg) translateZ(40px);  /* Bottom - shows at 90° X (FIXED) */
+            transform: rotateX(90deg) translateZ(40px);
         }
 
-        /* Dice dots styling */
         .dot {
             position: absolute;
             width: 12px;
@@ -122,7 +125,6 @@
             background: #333;
         }
 
-        /* Position dots for each face */
         .face-1 .dot:nth-child(1) { top: 34px; left: 34px; }
         
         .face-2 .dot:nth-child(1) { top: 20px; left: 20px; }
@@ -159,7 +161,7 @@
 
         .game-info {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             width: 100%;
             background: rgba(0, 0, 0, 0.3);
             padding: 15px;
@@ -167,16 +169,16 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .balance, .bet-amount, .win-amount {
+        .balance, .total-bet-display, .potential-win-display {
             text-align: center;
         }
 
-        .balance h2, .bet-amount h2, .win-amount h2 {
+        .balance h2, .total-bet-display h2, .potential-win-display h2 {
             font-size: 1.2rem;
             margin-bottom: 5px;
         }
 
-        .balance-value, .bet-value, .win-value {
+        .balance-value, .total-bet-value, .potential-win-value {
             font-size: 1.8rem;
             font-weight: bold;
         }
@@ -185,7 +187,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
             width: 100%;
             background: rgba(0, 0, 0, 0.3);
             padding: 20px;
@@ -193,10 +195,38 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
+        .dual-bet-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .bet-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .bet-box.complete {
+            border-color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .bet-box h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
         .bet-controls {
             display: flex;
             gap: 10px;
             align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
         }
 
         .bet-btn {
@@ -226,15 +256,13 @@
         }
 
         .number-selection {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 10px 0;
+            margin-top: 10px;
         }
 
         .number-option {
-            width: 60px;
             height: 60px;
             border-radius: 10px;
             cursor: pointer;
@@ -249,7 +277,7 @@
         }
 
         .number-option:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
             background: rgba(255, 255, 255, 0.3);
         }
 
@@ -259,14 +287,30 @@
             background: rgba(255, 255, 255, 0.4);
         }
 
+        .number-option.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .bet-summary {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
         .game-controls {
             display: flex;
             gap: 15px;
+            width: 100%;
+            justify-content: center;
         }
 
-        .roll-btn, .cashout-btn, .deposit-btn, .withdraw-btn {
-            padding: 12px 25px;
-            font-size: 1.2rem;
+        .roll-btn, .clear-btn, .cashout-btn {
+            padding: 15px 30px;
+            font-size: 1.3rem;
             border: none;
             border-radius: 5px;
             cursor: pointer;
@@ -277,9 +321,10 @@
         .roll-btn {
             background: #FF5722;
             color: white;
+            flex: 1;
         }
 
-        .roll-btn:hover {
+        .roll-btn:hover:not(:disabled) {
             background: #E64A19;
             transform: scale(1.05);
         }
@@ -290,6 +335,16 @@
             transform: none;
         }
 
+        .clear-btn {
+            background: #FF9800;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            background: #F57C00;
+            transform: scale(1.05);
+        }
+
         .cashout-btn {
             background: #2196F3;
             color: white;
@@ -297,26 +352,6 @@
 
         .cashout-btn:hover {
             background: #1976D2;
-            transform: scale(1.05);
-        }
-
-        .deposit-btn {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .deposit-btn:hover {
-            background: #45a049;
-            transform: scale(1.05);
-        }
-
-        .withdraw-btn {
-            background: #FF9800;
-            color: white;
-        }
-
-        .withdraw-btn:hover {
-            background: #F57C00;
             transform: scale(1.05);
         }
 
@@ -343,6 +378,7 @@
             z-index: 1000;
             text-align: center;
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 90%;
         }
 
         .result-popup.show {
@@ -408,46 +444,40 @@
         }
 
         .history-item {
-            min-width: 60px;
-            height: 60px;
+            min-width: 80px;
+            padding: 10px;
             border-radius: 10px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             font-weight: bold;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             background: white;
             color: #333;
         }
 
+        .history-item .result-number {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .history-item .result-status {
+            font-size: 0.8rem;
+        }
+
         .instructions {
             background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
+            padding: 20px;
             border-radius: 15px;
             margin-top: 10px;
             text-align: center;
             width: 100%;
         }
 
-        .odds-info {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .odd-item {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.9rem;
-        }
-
-        .bank-section {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #ffd700;
         }
 
         .confetti {
@@ -459,10 +489,13 @@
             pointer-events: none;
         }
 
-        /* Mobile Responsive */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             h1 {
                 font-size: 2rem;
+            }
+
+            .dual-bet-container {
+                grid-template-columns: 1fr;
             }
 
             .game-info {
@@ -470,18 +503,12 @@
                 gap: 15px;
             }
 
-            .balance-value, .bet-value, .win-value {
-                font-size: 1.5rem;
-            }
-            
-            /* Fixed mobile dice container */
             .dice-container {
                 width: 280px;
                 height: 280px;
                 margin: 0 auto;
             }
-            
-            /* Fixed mobile dice size and position */
+
             #physicsDice {
                 width: 60px;
                 height: 60px;
@@ -501,65 +528,43 @@
             .face-5 { transform: rotateX(-90deg) translateZ(30px); }
             .face-6 { transform: rotateX(90deg) translateZ(30px); }
 
-            /* Adjust dot sizes for mobile */
             .dot {
                 width: 9px;
                 height: 9px;
             }
 
             .face-1 .dot:nth-child(1) { top: 25.5px; left: 25.5px; }
-            
             .face-2 .dot:nth-child(1) { top: 15px; left: 15px; }
             .face-2 .dot:nth-child(2) { top: 36px; left: 36px; }
-            
             .face-3 .dot:nth-child(1) { top: 15px; left: 15px; }
             .face-3 .dot:nth-child(2) { top: 25.5px; left: 25.5px; }
             .face-3 .dot:nth-child(3) { top: 36px; left: 36px; }
-            
             .face-4 .dot:nth-child(1) { top: 15px; left: 15px; }
             .face-4 .dot:nth-child(2) { top: 15px; left: 36px; }
             .face-4 .dot:nth-child(3) { top: 36px; left: 15px; }
             .face-4 .dot:nth-child(4) { top: 36px; left: 36px; }
-            
             .face-5 .dot:nth-child(1) { top: 15px; left: 15px; }
             .face-5 .dot:nth-child(2) { top: 15px; left: 36px; }
             .face-5 .dot:nth-child(3) { top: 25.5px; left: 25.5px; }
             .face-5 .dot:nth-child(4) { top: 36px; left: 15px; }
             .face-5 .dot:nth-child(5) { top: 36px; left: 36px; }
-            
             .face-6 .dot:nth-child(1) { top: 15px; left: 15px; }
             .face-6 .dot:nth-child(2) { top: 15px; left: 36px; }
             .face-6 .dot:nth-child(3) { top: 25.5px; left: 15px; }
             .face-6 .dot:nth-child(4) { top: 25.5px; left: 36px; }
             .face-6 .dot:nth-child(5) { top: 36px; left: 15px; }
             .face-6 .dot:nth-child(6) { top: 36px; left: 36px; }
-            
-            .game-controls, .bank-section {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .game-controls button, .bank-section button {
-                width: 100%;
-            }
 
-            .number-option {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
+            .game-controls {
+                flex-direction: column;
             }
 
             .result-popup {
                 padding: 30px 40px;
-                max-width: 90%;
             }
 
             .result-popup h2 {
                 font-size: 2rem;
-            }
-
-            .result-popup p {
-                font-size: 1.1rem;
             }
         }
     </style>
@@ -567,8 +572,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>Perfect Physics Dice</h1>
-            <p>Bet on the dots - win when they match!</p>
+            <h1>🎲 Dual Bet Dice 🎲</h1>
+            <p class="subtitle">Place 2 Bets - Win 6x on Correct Prediction!</p>
         </header>
         
         <div class="dice-area">
@@ -610,7 +615,7 @@
                     </div>
                 </div>
             </div>
-            <p class="drag-instruction">Click and drag to throw - smooth single roll!</p>
+            <p class="drag-instruction">Click and drag to throw the dice!</p>
         </div>
         
         <div class="game-info">
@@ -618,58 +623,84 @@
                 <h2>Balance</h2>
                 <div class="balance-value">Ksh 1000</div>
             </div>
-            <div class="bet-amount">
-                <h2>Current Bet</h2>
-                <div class="bet-value">Ksh 0</div>
+            <div class="total-bet-display">
+                <h2>Total Bet</h2>
+                <div class="total-bet-value">Ksh 0</div>
             </div>
-            <div class="win-amount">
+            <div class="potential-win-display">
                 <h2>Potential Win</h2>
-                <div class="win-value">Ksh 0</div>
+                <div class="potential-win-value">Ksh 0</div>
             </div>
         </div>
         
         <div class="betting-section">
-            <h2>Place Your Bet</h2>
+            <h2>⚡ Place Your Dual Bets ⚡</h2>
             
-            <div class="bet-controls">
-                <button class="bet-btn" id="decrease-bet">-</button>
-                <input type="number" class="bet-input" id="bet-amount" value="10" min="10" max="1000">
-                <button class="bet-btn" id="increase-bet">+</button>
-            </div>
-            
-            <h3>Select a Number (1-6)</h3>
-            <div class="number-selection">
-                <div class="number-option selected" data-number="1">1</div>
-                <div class="number-option" data-number="2">2</div>
-                <div class="number-option" data-number="3">3</div>
-                <div class="number-option" data-number="4">4</div>
-                <div class="number-option" data-number="5">5</div>
-                <div class="number-option" data-number="6">6</div>
-            </div>
-            
-            <div class="odds-info">
-                <div class="odd-item">1 dot: Pays 1x</div>
-                <div class="odd-item">2 dots: Pays 2x</div>
-                <div class="odd-item">3 dots: Pays 3x</div>
-                <div class="odd-item">4 dots: Pays 4x</div>
-                <div class="odd-item">5 dots: Pays 5x</div>
-                <div class="odd-item">6 dots: Pays 6x</div>
+            <div class="dual-bet-container">
+                <!-- Bet 1 -->
+                <div class="bet-box" id="bet-box-1">
+                    <h3>🎯 Bet #1</h3>
+                    
+                    <div class="bet-controls">
+                        <button class="bet-btn" data-bet="1" data-action="decrease">-</button>
+                        <input type="number" class="bet-input" id="bet-amount-1" value="10" min="10">
+                        <button class="bet-btn" data-bet="1" data-action="increase">+</button>
+                    </div>
+                    
+                    <h4 style="text-align: center; margin-bottom: 10px;">Select Number</h4>
+                    <div class="number-selection" id="numbers-bet-1">
+                        <div class="number-option" data-bet="1" data-number="1">1</div>
+                        <div class="number-option" data-bet="1" data-number="2">2</div>
+                        <div class="number-option" data-bet="1" data-number="3">3</div>
+                        <div class="number-option" data-bet="1" data-number="4">4</div>
+                        <div class="number-option" data-bet="1" data-number="5">5</div>
+                        <div class="number-option" data-bet="1" data-number="6">6</div>
+                    </div>
+                    
+                    <div class="bet-summary" id="summary-1">
+                        <div>Bet: <strong>Ksh <span id="bet-1-amount">0</span></strong></div>
+                        <div>Number: <strong><span id="bet-1-number">-</span></strong></div>
+                        <div>Win: <strong>Ksh <span id="bet-1-win">0</span></strong> (6x)</div>
+                    </div>
+                </div>
+                
+                <!-- Bet 2 -->
+                <div class="bet-box" id="bet-box-2">
+                    <h3>🎯 Bet #2</h3>
+                    
+                    <div class="bet-controls">
+                        <button class="bet-btn" data-bet="2" data-action="decrease">-</button>
+                        <input type="number" class="bet-input" id="bet-amount-2" value="10" min="10">
+                        <button class="bet-btn" data-bet="2" data-action="increase">+</button>
+                    </div>
+                    
+                    <h4 style="text-align: center; margin-bottom: 10px;">Select Number</h4>
+                    <div class="number-selection" id="numbers-bet-2">
+                        <div class="number-option" data-bet="2" data-number="1">1</div>
+                        <div class="number-option" data-bet="2" data-number="2">2</div>
+                        <div class="number-option" data-bet="2" data-number="3">3</div>
+                        <div class="number-option" data-bet="2" data-number="4">4</div>
+                        <div class="number-option" data-bet="2" data-number="5">5</div>
+                        <div class="number-option" data-bet="2" data-number="6">6</div>
+                    </div>
+                    
+                    <div class="bet-summary" id="summary-2">
+                        <div>Bet: <strong>Ksh <span id="bet-2-amount">0</span></strong></div>
+                        <div>Number: <strong><span id="bet-2-number">-</span></strong></div>
+                        <div>Win: <strong>Ksh <span id="bet-2-win">0</span></strong> (6x)</div>
+                    </div>
+                </div>
             </div>
             
             <div class="game-controls">
-                <button class="roll-btn" id="roll-dice">Throw Dice</button>
-                <button class="cashout-btn" id="cash-out">Cash Out</button>
-            </div>
-            
-            <div class="bank-section">
-                <button class="deposit-btn" id="deposit">Deposit</button>
-                <button class="withdraw-btn" id="withdraw">Withdraw</button>
+                <button class="roll-btn" id="roll-dice" disabled>🎲 Throw Dice</button>
+                <button class="clear-btn" id="clear-bets">🔄 Clear Bets</button>
+                <button class="cashout-btn" id="cash-out">💰 Cash Out</button>
             </div>
             
             <div class="result-message" id="result-message"></div>
         </div>
 
-        <!-- Result Popup -->
         <div class="popup-overlay" id="popup-overlay"></div>
         <div class="result-popup" id="result-popup">
             <h2 id="popup-title"></h2>
@@ -678,20 +709,20 @@
         </div>
         
         <div class="instructions">
-            <p>Match the dots to win! Bet on a number and win if the dice shows that many dots.</p>
-            <p>Higher numbers = higher payouts!</p>
+            <h3>📋 How to Play</h3>
+            <p>✅ Place TWO bets with different amounts and numbers</p>
+            <p>🎲 Throw the dice - one bet wins, one loses</p>
+            <p>💰 Winning bet pays 6x your stake!</p>
+            <p>🎯 Example: Bet Ksh 50 on "3" and Ksh 30 on "5". If dice shows 3, you win Ksh 300!</p>
         </div>
         
         <div class="history">
             <h2>Game History</h2>
-            <div class="history-list" id="history-list">
-                <!-- History items will be added here dynamically -->
-            </div>
+            <div class="history-list" id="history-list"></div>
         </div>
     </div>
 
     <script>
-        // Perfect Physics Dice with Single Smooth Roll
         class PerfectPhysicsDice {
             constructor(container) {
                 this.container = container;
@@ -700,18 +731,14 @@
                 this.dragging = false;
                 this.dragStart = { x: 0, y: 0 };
                 
-                // Detect mobile
-                this.isMobile = window.innerWidth <= 600;
+                this.isMobile = window.innerWidth <= 768;
                 
-                // Position and velocity
                 this.position = { x: this.isMobile ? 110 : 150, y: this.isMobile ? 110 : 150 };
                 this.velocity = { x: 0, y: 0 };
                 
-                // Rotation and angular velocity
                 this.rotation = { x: 0, y: 0, z: 0 };
                 this.angularVelocity = { x: 0, y: 0, z: 0 };
                 
-                // Physics properties
                 this.friction = 0.98;
                 this.bounceDamping = 0.5;
                 this.gravity = 0.3;
@@ -720,7 +747,6 @@
                 this.containerHeight = this.isMobile ? 220 : 320;
                 this.angularFriction = 0.985;
                 
-                // Rolling control
                 this.finalResult = null;
                 this.rollDuration = 1800;
                 this.rollStartTime = null;
@@ -799,12 +825,10 @@
                 this.isRolling = true;
                 this.rollStartTime = Date.now();
                 rollDiceBtn.disabled = true;
-                resultMessage.textContent = '';
+                resultMessage.textContent = 'Rolling...';
                 
-                if (gameState.currentBet > 0) {
-                    gameState.balance -= gameState.currentBet;
-                    updateDisplay();
-                }
+                gameState.balance -= gameState.bet1.amount + gameState.bet2.amount;
+                updateDisplay();
                 
                 setTimeout(() => {
                     this.smoothLanding();
@@ -879,35 +903,33 @@
             snapToResult(result) {
                 let targetRotationX, targetRotationY, targetRotationZ;
                 
-                // FIXED: Corrected rotations to match the CSS transforms
-                // Now face-5 has rotateX(-90deg) and face-6 has rotateX(90deg)
                 switch(result) {
-                    case 1: // Front face (1 dot)
+                    case 1:
                         targetRotationX = 0;
                         targetRotationY = 0;
                         targetRotationZ = 0;
                         break;
-                    case 2: // Back face (2 dots)
+                    case 2:
                         targetRotationX = 0;
                         targetRotationY = Math.PI;
                         targetRotationZ = 0;
                         break;
-                    case 4: // Right face (3 dots)
+                    case 4:
                         targetRotationX = 0;
                         targetRotationY = Math.PI / 2;
                         targetRotationZ = 0;
                         break;
-                    case 3: // Left face (4 dots)
+                    case 3:
                         targetRotationX = 0;
                         targetRotationY = -Math.PI / 2;
                         targetRotationZ = 0;
                         break;
-                    case 6: // Top face (5 dots) - FIXED to -90° X
+                    case 6:
                         targetRotationX = -Math.PI / 2;
                         targetRotationY = 0;
                         targetRotationZ = 0;
                         break;
-                    case 5: // Bottom face (6 dots) - FIXED to 90° X
+                    case 5:
                         targetRotationX = Math.PI / 2;
                         targetRotationY = 0;
                         targetRotationZ = 0;
@@ -943,7 +965,7 @@
                         this.isRolling = false;
                         setTimeout(() => {
                             finishRoll(result);
-                            rollDiceBtn.disabled = false;
+                            rollDiceBtn.disabled = !areBothBetsComplete();
                         }, 100);
                     }
                 };
@@ -971,12 +993,10 @@
                 this.rollStartTime = Date.now();
                 rollDiceBtn.disabled = true;
                 
-                if (gameState.currentBet > 0) {
-                    gameState.balance -= gameState.currentBet;
-                    updateDisplay();
-                }
+                gameState.balance -= gameState.bet1.amount + gameState.bet2.amount;
+                updateDisplay();
                 
-                resultMessage.textContent = '';
+                resultMessage.textContent = 'Rolling...';
                 
                 setTimeout(() => {
                     this.smoothLanding();
@@ -984,35 +1004,25 @@
             }
         }
 
-        // Game state
         const gameState = {
             balance: 1000,
-            currentBet: 0,
-            selectedNumber: 1,
-            isRolling: false,
-            history: [],
-            odds: {
-                1: 1,
-                2: 2,
-                3: 3,
-                4: 4,
-                5: 5,
-                6: 6
-            }
+            bet1: {
+                amount: 0,
+                number: null
+            },
+            bet2: {
+                amount: 0,
+                number: null
+            },
+            history: []
         };
 
-        // DOM elements
         const balanceValue = document.querySelector('.balance-value');
-        const betValue = document.querySelector('.bet-value');
-        const winValue = document.querySelector('.win-value');
-        const betAmountInput = document.getElementById('bet-amount');
-        const decreaseBetBtn = document.getElementById('decrease-bet');
-        const increaseBetBtn = document.getElementById('increase-bet');
-        const numberOptions = document.querySelectorAll('.number-option');
+        const totalBetValue = document.querySelector('.total-bet-value');
+        const potentialWinValue = document.querySelector('.potential-win-value');
         const rollDiceBtn = document.getElementById('roll-dice');
+        const clearBetsBtn = document.getElementById('clear-bets');
         const cashOutBtn = document.getElementById('cash-out');
-        const depositBtn = document.getElementById('deposit');
-        const withdrawBtn = document.getElementById('withdraw');
         const resultMessage = document.getElementById('result-message');
         const historyList = document.getElementById('history-list');
         const diceContainer = document.querySelector('.dice-container');
@@ -1021,67 +1031,158 @@
 
         function initGame() {
             updateDisplay();
-            
-            decreaseBetBtn.addEventListener('click', () => adjustBet(-10));
-            increaseBetBtn.addEventListener('click', () => adjustBet(10));
-            betAmountInput.addEventListener('change', updateBetFromInput);
-            
-            numberOptions.forEach(option => {
-                option.addEventListener('click', () => selectNumber(parseInt(option.dataset.number)));
-            });
+            setupBetControls();
             
             rollDiceBtn.addEventListener('click', () => perfectDice.quickThrow());
+            clearBetsBtn.addEventListener('click', clearAllBets);
             cashOutBtn.addEventListener('click', cashOut);
-            depositBtn.addEventListener('click', depositFunds);
-            withdrawBtn.addEventListener('click', withdrawFunds);
         }
 
-        function updateDisplay() {
-            balanceValue.textContent = `Ksh ${gameState.balance}`;
-            betValue.textContent = `Ksh ${gameState.currentBet}`;
+        function setupBetControls() {
+            document.querySelectorAll('.bet-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const betNum = e.target.dataset.bet;
+                    const action = e.target.dataset.action;
+                    adjustBet(betNum, action === 'increase' ? 10 : -10);
+                });
+            });
+
+            document.querySelectorAll('.bet-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const betNum = e.target.id.includes('1') ? '1' : '2';
+                    updateBetFromInput(betNum, parseInt(e.target.value));
+                });
+            });
+
+            document.querySelectorAll('.number-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const betNum = e.target.dataset.bet;
+                    const number = parseInt(e.target.dataset.number);
+                    selectNumber(betNum, number);
+                });
+            });
+        }
+
+        function adjustBet(betNum, amount) {
+            const input = document.getElementById(`bet-amount-${betNum}`);
+            const currentBet = parseInt(input.value) || 0;
+            const newBet = Math.max(10, currentBet + amount);
             
-            const potentialWin = gameState.currentBet * gameState.odds[gameState.selectedNumber];
-            winValue.textContent = `Ksh ${potentialWin}`;
+            if (newBet <= gameState.balance) {
+                input.value = newBet;
+                updateBetFromInput(betNum, newBet);
+            }
+        }
+
+        function updateBetFromInput(betNum, amount) {
+            amount = Math.max(10, Math.min(amount, gameState.balance));
             
-            numberOptions.forEach(option => {
-                if (parseInt(option.dataset.number) === gameState.selectedNumber) {
-                    option.classList.add('selected');
+            const bet = betNum === '1' ? gameState.bet1 : gameState.bet2;
+            bet.amount = amount;
+            
+            document.getElementById(`bet-amount-${betNum}`).value = amount;
+            updateDisplay();
+            updateBetBox(betNum);
+        }
+
+        function selectNumber(betNum, number) {
+            const bet = betNum === '1' ? gameState.bet1 : gameState.bet2;
+            const otherBet = betNum === '1' ? gameState.bet2 : gameState.bet1;
+            
+            bet.number = number;
+            
+            document.querySelectorAll(`[data-bet="${betNum}"].number-option`).forEach(opt => {
+                opt.classList.remove('selected');
+                if (parseInt(opt.dataset.number) === number) {
+                    opt.classList.add('selected');
+                }
+            });
+            
+            updateNumberAvailability();
+            updateDisplay();
+            updateBetBox(betNum);
+        }
+
+        function updateNumberAvailability() {
+            const num1 = gameState.bet1.number;
+            const num2 = gameState.bet2.number;
+            
+            document.querySelectorAll('[data-bet="1"].number-option').forEach(opt => {
+                const num = parseInt(opt.dataset.number);
+                if (num === num2) {
+                    opt.classList.add('disabled');
                 } else {
-                    option.classList.remove('selected');
+                    opt.classList.remove('disabled');
+                }
+            });
+            
+            document.querySelectorAll('[data-bet="2"].number-option').forEach(opt => {
+                const num = parseInt(opt.dataset.number);
+                if (num === num1) {
+                    opt.classList.add('disabled');
+                } else {
+                    opt.classList.remove('disabled');
                 }
             });
         }
 
-        function adjustBet(amount) {
-            const newBet = parseInt(betAmountInput.value) + amount;
-            if (newBet >= 10 && newBet <= gameState.balance) {
-                betAmountInput.value = newBet;
-                gameState.currentBet = newBet;
-                updateDisplay();
-            }
-        }
-
-        function updateBetFromInput() {
-            let bet = parseInt(betAmountInput.value);
-            if (isNaN(bet) || bet < 10) {
-                bet = 10;
-                betAmountInput.value = 10;
-            } else if (bet > gameState.balance) {
-                bet = gameState.balance;
-                betAmountInput.value = gameState.balance;
+        function updateBetBox(betNum) {
+            const bet = betNum === '1' ? gameState.bet1 : gameState.bet2;
+            const isComplete = bet.amount > 0 && bet.number !== null;
+            
+            const box = document.getElementById(`bet-box-${betNum}`);
+            if (isComplete) {
+                box.classList.add('complete');
+            } else {
+                box.classList.remove('complete');
             }
             
-            gameState.currentBet = bet;
-            updateDisplay();
+            document.getElementById(`bet-${betNum}-amount`).textContent = bet.amount;
+            document.getElementById(`bet-${betNum}-number`).textContent = bet.number || '-';
+            document.getElementById(`bet-${betNum}-win`).textContent = bet.amount * 6;
         }
 
-        function selectNumber(number) {
-            gameState.selectedNumber = number;
-            updateDisplay();
+        function areBothBetsComplete() {
+            return gameState.bet1.amount > 0 && gameState.bet1.number !== null &&
+                   gameState.bet2.amount > 0 && gameState.bet2.number !== null &&
+                   gameState.bet1.number !== gameState.bet2.number;
+        }
+
+        function updateDisplay() {
+            balanceValue.textContent = `Ksh ${gameState.balance}`;
+            
+            const totalBet = gameState.bet1.amount + gameState.bet2.amount;
+            totalBetValue.textContent = `Ksh ${totalBet}`;
+            
+            let potentialWin = 0;
+            if (gameState.bet1.amount > 0 && gameState.bet1.number !== null) {
+                potentialWin = Math.max(potentialWin, gameState.bet1.amount * 6);
+            }
+            if (gameState.bet2.amount > 0 && gameState.bet2.number !== null) {
+                potentialWin = Math.max(potentialWin, gameState.bet2.amount * 6);
+            }
+            potentialWinValue.textContent = `Ksh ${potentialWin}`;
+            
+            rollDiceBtn.disabled = !areBothBetsComplete();
+            
+            updateBetBox('1');
+            updateBetBox('2');
         }
 
         function finishRoll(result) {
-            const won = result === gameState.selectedNumber;
+            const bet1Won = result === gameState.bet1.number;
+            const bet2Won = result === gameState.bet2.number;
+            
+            let winAmount = 0;
+            let winningBet = null;
+            
+            if (bet1Won) {
+                winAmount = gameState.bet1.amount * 6;
+                winningBet = 1;
+            } else if (bet2Won) {
+                winAmount = gameState.bet2.amount * 6;
+                winningBet = 2;
+            }
             
             const popup = document.getElementById('result-popup');
             const popupOverlay = document.getElementById('popup-overlay');
@@ -1089,21 +1190,20 @@
             const popupMessage = document.getElementById('popup-message');
             const popupAmount = document.getElementById('popup-amount');
             
-            if (won) {
-                const winAmount = gameState.currentBet * gameState.odds[result];
+            if (winningBet) {
                 gameState.balance += winAmount;
                 
                 popup.className = 'result-popup win-popup show';
                 popupTitle.textContent = '🎉 YOU WIN! 🎉';
-                popupMessage.textContent = `Dice showed ${result} dot${result > 1 ? 's' : ''}!`;
-                popupAmount.textContent = `You won Ksh ${winAmount}!`;
+                popupMessage.textContent = `Dice: ${result} | Bet #${winningBet} Won!`;
+                popupAmount.textContent = `You won Ksh ${winAmount} (6x payout)!`;
                 
                 playWinSound();
                 createConfetti();
             } else {
                 popup.className = 'result-popup lose-popup show';
-                popupTitle.textContent = '😞 YOU LOSE';
-                popupMessage.textContent = `Dice showed ${result} dot${result > 1 ? 's' : ''} (You bet ${gameState.selectedNumber})`;
+                popupTitle.textContent = '😞 BOTH BETS LOST';
+                popupMessage.textContent = `Dice showed ${result}`;
                 popupAmount.textContent = `Better luck next time!`;
                 
                 playLoseSound();
@@ -1114,13 +1214,31 @@
             setTimeout(() => {
                 popup.classList.remove('show');
                 popupOverlay.classList.remove('show');
-            }, 3000);
+            }, 3500);
             
-            addToHistory(result, won, won ? winAmount : 0);
+            addToHistory(result, winningBet, winAmount);
             
+            clearAllBets();
             updateDisplay();
-            gameState.currentBet = 0;
-            betAmountInput.value = 10;
+        }
+
+        function clearAllBets() {
+            gameState.bet1 = { amount: 0, number: null };
+            gameState.bet2 = { amount: 0, number: null };
+            
+            document.getElementById('bet-amount-1').value = 10;
+            document.getElementById('bet-amount-2').value = 10;
+            
+            document.querySelectorAll('.number-option').forEach(opt => {
+                opt.classList.remove('selected', 'disabled');
+            });
+            
+            document.querySelectorAll('.bet-box').forEach(box => {
+                box.classList.remove('complete');
+            });
+            
+            resultMessage.textContent = '';
+            updateDisplay();
         }
 
         function cashOut() {
@@ -1129,63 +1247,43 @@
                 return;
             }
             
-            resultMessage.textContent = `Cashed out Ksh ${gameState.balance}!`;
+            resultMessage.textContent = `💰 Cashed out Ksh ${gameState.balance}!`;
+            resultMessage.style.color = '#4CAF50';
             
-            gameState.balance = 1000;
-            gameState.currentBet = 0;
-            betAmountInput.value = 10;
-            updateDisplay();
+            setTimeout(() => {
+                resultMessage.textContent = '';
+            }, 3000);
         }
 
-        function depositFunds() {
-            const amount = prompt("Enter deposit amount:");
-            if (amount && !isNaN(amount) && parseInt(amount) > 0) {
-                gameState.balance += parseInt(amount);
-                updateDisplay();
-                resultMessage.textContent = `Deposited Ksh ${amount} successfully!`;
-                addToHistory(`Deposit`, true, parseInt(amount));
-            }
-        }
-
-        function withdrawFunds() {
-            const amount = prompt("Enter withdrawal amount:");
-            if (amount && !isNaN(amount) && parseInt(amount) > 0) {
-                if (parseInt(amount) > gameState.balance) {
-                    resultMessage.textContent = "Insufficient balance!";
-                    return;
-                }
-                
-                gameState.balance -= parseInt(amount);
-                updateDisplay();
-                resultMessage.textContent = `Withdrew Ksh ${amount} successfully!`;
-                addToHistory(`Withdrawal`, true, parseInt(amount));
-            }
-        }
-
-        function addToHistory(number, isWin, amount = 0) {
+        function addToHistory(result, winningBet, winAmount) {
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
             
-            if (typeof number === 'string') {
-                historyItem.textContent = number === 'Deposit' ? '+' : '-';
-                historyItem.title = `${number}: Ksh ${amount}`;
+            const resultNum = document.createElement('div');
+            resultNum.className = 'result-number';
+            resultNum.textContent = result;
+            
+            const resultStatus = document.createElement('div');
+            resultStatus.className = 'result-status';
+            
+            if (winningBet) {
+                resultStatus.textContent = `Bet ${winningBet} Won`;
+                historyItem.style.background = '#4CAF50';
+                historyItem.title = `Won Ksh ${winAmount}`;
             } else {
-                historyItem.textContent = number;
-                historyItem.title = isWin ? `Won: Ksh ${amount}` : `Lost`;
+                resultStatus.textContent = 'Lost';
+                historyItem.style.background = '#F44336';
+                historyItem.title = 'Both bets lost';
             }
             
-            historyItem.style.background = isWin ? '#4CAF50' : '#F44336';
+            historyItem.appendChild(resultNum);
+            historyItem.appendChild(resultStatus);
             historyItem.style.color = 'white';
             
             historyList.prepend(historyItem);
             
             if (historyList.children.length > 10) {
                 historyList.removeChild(historyList.lastChild);
-            }
-            
-            gameState.history.unshift({ number, isWin, amount });
-            if (gameState.history.length > 10) {
-                gameState.history.pop();
             }
         }
 
